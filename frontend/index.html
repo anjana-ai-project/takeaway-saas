@@ -674,6 +674,9 @@
 
     if (!valid) return;
     selectedMethod = method;
+    // Hide simulate-failure for COD — it has no meaning for cash payments
+    const simRow = document.querySelector('.checkbox-row');
+    simRow.classList.toggle('hidden', method === 'cod');
     showSection('payment');
   }
 
