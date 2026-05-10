@@ -142,3 +142,6 @@ Each AI-generated test case was critically reviewed and validated before inclusi
 - Deploy behind Nginx as load balancer
 - Use Kubernetes for auto-scaling based on order volume
 - Add Locust performance tests to validate each scaling decision before production release
+
+## Live Demo
+🚀 [https://takeaway-saas.onrender.com/frontend/index.html](https://takeaway-saas.onrender.com/frontend/index.html)
