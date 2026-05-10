@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(venv/Scripts/uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl -s http://localhost:8000/)",
+      "Bash(venv/Scripts/pytest tests/unit/test_menu.py -v)",
+      "Bash(venv/Scripts/pytest tests/unit/test_order.py tests/integration/test_order_payment.py -v)",
+      "Bash(venv/Scripts/pip show *)",
+      "Bash(venv/Scripts/pytest tests/unit/test_payment.py tests/unit/test_order.py tests/unit/test_menu.py tests/integration/test_order_payment.py -v)",
+      "Bash(venv/Scripts/pip freeze *)",
+      "Bash(venv/Scripts/pytest tests/unit tests/integration -v)",
+      "Bash(npx playwright *)",
+      "Bash(venv/Scripts/pytest tests/unit/test_ai_summary.py -v)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill *)",
+      "PowerShell(Stop-Process *)",
+      "Bash(venv/Scripts/python -c ' *)",
+      "Bash(venv/Scripts/python -m pytest tests/unit tests/integration -v --html=reports/pytest-report.html -s)"
+    ]
+  }
+}

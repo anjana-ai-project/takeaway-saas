@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Takeaway</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #ff6b35;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header span { font-size: 1.5rem; }
+
+    .cart-badge {
+      margin-left: auto;
+      background: white;
+      color: #ff6b35;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.15s;
+      user-select: none;
+    }
+    .cart-badge:hover { transform: scale(1.05); }
+    .cart-badge.hidden { display: none; }
+
+    main {
+      max-width: 680px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── Section transitions ── */
+    .section {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+    .section.active {
+      display: block;
+      animation: fadeIn 0.28s ease forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #ff6b35;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Menu ── */
+    #menu-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid #f0f0f0;
+      border-radius: 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .menu-item:hover { border-color: #ff6b35; box-shadow: 0 2px 8px rgba(255,107,53,0.1); }
+
+    .menu-item-info { flex: 1; }
+    .menu-item-name { font-weight: 600; font-size: 0.95rem; }
+    .menu-item-meta { font-size: 0.8rem; color: #888; margin-top: 0.15rem; }
+    .menu-item-price { font-weight: 700; font-size: 1rem; color: #1a1a1a; white-space: nowrap; }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      background: #fff3ee;
+      color: #ff6b35;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: #ff6b35; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #e5561f; }
+
+    .btn-secondary { background: #f0f0f0; color: #1a1a1a; }
+    .btn-secondary:hover:not(:disabled) { background: #e0e0e0; }
+
+    .btn-success { background: #22c55e; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover:not(:disabled) { background: #dc2626; }
+
+    .btn-block { width: 100%; padding: 0.75rem; font-size: 0.95rem; border-radius: 10px; }
+
+    .add-btn {
+      background: #fff3ee;
+      color: #ff6b35;
+      border: 1.5px solid #ffd5c3;
+      border-radius: 7px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .add-btn:hover { background: #ffd5c3; }
+
+    /* ── Cart ── */
+    #cart-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.1rem; }
+
+    .cart-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.92rem;
+    }
+    .cart-row-name { flex: 1; }
+    .cart-row-qty {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .qty-btn {
+      width: 26px; height: 26px;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      background: white;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .qty-btn:hover { background: #f5f5f5; }
+    .qty-num { min-width: 1.4rem; text-align: center; font-weight: 600; }
+    .cart-row-price { font-weight: 600; min-width: 4.5rem; text-align: right; }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding-top: 0.75rem;
+      border-top: 1.5px solid #f0f0f0;
+      margin-bottom: 1.1rem;
+    }
+
+    /* ── Payment ── */
+    .order-summary {
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .order-summary p { display: flex; justify-content: space-between; margin-bottom: 0.35rem; }
+    .order-summary p:last-child { margin-bottom: 0; font-weight: 700; font-size: 1rem; border-top: 1px solid #e5e5e5; padding-top: 0.5rem; margin-top: 0.25rem; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.1rem;
+      font-size: 0.88rem;
+      color: #555;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checkbox-row input { width: 16px; height: 16px; accent-color: #ff6b35; cursor: pointer; }
+
+    .processing {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      padding: 0.5rem 0;
+      display: none;
+    }
+    .processing.visible { display: block; }
+
+    /* ── Result ── */
+    .result-box {
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .result-box.success { background: #f0fdf4; border: 1.5px solid #bbf7d0; }
+    .result-box.failure { background: #fef2f2; border: 1.5px solid #fecaca; }
+    .result-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .result-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .result-title.success { color: #15803d; }
+    .result-title.failure { color: #b91c1c; }
+    .result-msg { font-size: 0.88rem; color: #555; }
+
+    #ai-summary {
+      margin-top: 1rem;
+      padding: 1rem 1.1rem;
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1.5px dashed #ddd;
+      font-size: 0.88rem;
+      color: #666;
+      min-height: 3rem;
+    }
+    #ai-summary:empty::before { content: "AI summary will appear here…"; color: #bbb; }
+
+    /* ── Loading skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 8px;
+      height: 62px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    .hidden { display: none; }
+    .empty-msg { color: #999; font-size: 0.9rem; text-align: center; padding: 1.5rem 0; }
+
+    /* ── Payment method ── */
+    .method-options { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.25rem; }
+
+    .method-card {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.9rem 1rem;
+      border: 1.5px solid #e8e8e8;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .method-card:hover { border-color: #ff6b35; background: #fffaf8; }
+    .method-card.selected { border-color: #ff6b35; background: #fff3ee; }
+    .method-card input[type="radio"] { accent-color: #ff6b35; width: 16px; height: 16px; flex-shrink: 0; }
+    .method-icon { font-size: 1.35rem; }
+    .method-label { font-weight: 600; font-size: 0.92rem; }
+    .method-sub { font-size: 0.78rem; color: #888; margin-top: 0.1rem; }
+
+    .method-fields {
+      display: none;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+      animation: fadeIn 0.2s ease forwards;
+    }
+    .method-fields.visible { display: flex; }
+
+    .field-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .field-group label { font-size: 0.8rem; font-weight: 600; color: #555; }
+    .field-group input {
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .field-group input:focus { border-color: #ff6b35; }
+    .field-group input.error { border-color: #ef4444; }
+
+    .card-row { display: flex; gap: 0.65rem; }
+    .card-row .field-group { flex: 1; }
+
+    .field-error { font-size: 0.76rem; color: #ef4444; margin-top: 0.15rem; display: none; }
+    .field-error.visible { display: block; }
+
+    @media (max-width: 480px) {
+      main { margin: 1rem auto; }
+      .card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>🍔</span>
+  <h1 onclick="resetApp()" style="cursor:pointer">Takeaway</h1>
+  <div class="cart-badge hidden" id="cart-badge" onclick="showSection('cart')">🛒 <span id="cart-count">0</span></div>
+</header>
+
+<main>
+  <!-- MENU -->
+  <section class="section active card" id="section-menu">
+    <div class="section-title">Today's Menu</div>
+    <div id="cart-empty-msg" class="hidden" style="background:#fff3ee;color:#c2410c;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.87rem;font-weight:600;margin-bottom:0.75rem;">Please add items to your cart before placing an order.</div>
+    <div id="menu-list">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+    <button class="btn btn-primary btn-block hidden" id="view-cart-btn" style="margin-top:1rem" onclick="showSection('cart')">View Cart</button>
+  </section>
+
+  <!-- CART -->
+  <section class="section card" id="section-cart">
+    <div class="section-title">Your Cart</div>
+    <div id="cart-list"></div>
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cart-total">₹0</span>
+    </div>
+    <button class="btn btn-secondary btn-block" style="margin-bottom:0.6rem" onclick="showSection('menu')">← Back to Menu</button>
+    <button class="btn btn-primary btn-block" id="place-order-btn" onclick="placeOrder()">Place Order</button>
+  </section>
+
+  <!-- PAYMENT METHOD -->
+  <section class="section card" id="section-payment-method">
+    <div class="section-title">Choose Payment Method</div>
+
+    <div class="method-options">
+      <label class="method-card selected" id="method-card-upi">
+        <input type="radio" name="payment-method" value="upi" checked onchange="onMethodChange()" />
+        <span class="method-icon">📱</span>
+        <div>
+          <div class="method-label">UPI</div>
+          <div class="method-sub">Pay instantly with any UPI app</div>
+        </div>
+      </label>
+      <label class="method-card" id="method-card-card">
+        <input type="radio" name="payment-method" value="card" onchange="onMethodChange()" />
+        <span class="method-icon">💳</span>
+        <div>
+          <div class="method-label">Credit / Debit Card</div>
+          <div class="method-sub">Visa, Mastercard, RuPay</div>
+        </div>
+      </label>
+      <label class="method-card" id="method-card-cod">
+        <input type="radio" name="payment-method" value="cod" onchange="onMethodChange()" />
+        <span class="method-icon">🏠</span>
+        <div>
+          <div class="method-label">Cash on Delivery</div>
+          <div class="method-sub">Pay when your order arrives</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- UPI fields -->
+    <div class="method-fields visible" id="fields-upi">
+      <div class="field-group">
+        <label for="upi-id">UPI ID</label>
+        <input type="text" id="upi-id" placeholder="name@upi" autocomplete="off" />
+        <span class="field-error" id="err-upi">Please enter your UPI ID.</span>
+      </div>
+    </div>
+
+    <!-- Card fields -->
+    <div class="method-fields" id="fields-card">
+      <div class="field-group">
+        <label for="card-number">Card Number</label>
+        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="off" />
+        <span class="field-error" id="err-card-number">Please enter your card number.</span>
+      </div>
+      <div class="card-row">
+        <div class="field-group">
+          <label for="card-expiry">Expiry</label>
+          <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" autocomplete="off" />
+          <span class="field-error" id="err-card-expiry">Required.</span>
+        </div>
+        <div class="field-group">
+          <label for="card-cvv">CVV</label>
+          <input type="password" id="card-cvv" placeholder="•••" maxlength="4" autocomplete="off" />
+          <span class="field-error" id="err-card-cvv">Required.</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary btn-block" style="margin-bottom:0.6rem" onclick="showSection('cart')">← Back to Cart</button>
+    <button class="btn btn-primary btn-block" onclick="proceedToPay()">Proceed to Pay</button>
+  </section>
+
+  <!-- PAYMENT -->
+  <section class="section card" id="section-payment">
+    <div class="section-title">Payment</div>
+    <div class="order-summary" id="payment-summary"></div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="simulate-failure" />
+      Simulate payment failure
+    </label>
+    <div class="processing" id="processing-msg">Processing payment…</div>
+    <button class="btn btn-primary btn-block" id="pay-btn" onclick="pay()">Pay Now</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="section card" id="section-result">
+    <div id="result-box" class="result-box">
+      <div class="result-icon" id="result-icon"></div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-msg" id="result-msg"></div>
+      <div id="result-order-id" class="hidden" style="margin-top:0.75rem;font-size:0.78rem;color:#888;"></div>
+    </div>
+    <button class="btn btn-danger btn-block hidden" id="try-again-btn" onclick="showSection('payment-method')">Try Again</button>
+    <div id="ai-summary"></div>
+  </section>
+</main>
+
+<script>
+  const API = 'http://localhost:8000';
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let menuItems = [];
+  const cart = {};   // { item_id: quantity }
+  let currentOrder = null;
+  let selectedMethod = 'upi';
+
+  // ── Reset ──────────────────────────────────────────────────────────────────
+  function resetApp() {
+    Object.keys(cart).forEach(k => delete cart[k]);
+    currentOrder = null;
+    updateCartBadge();
+    document.getElementById('simulate-failure').checked = false;
+    document.getElementById('ai-summary').innerHTML = '';
+    selectedMethod = 'upi';
+    document.querySelector('input[name="payment-method"][value="upi"]').checked = true;
+    onMethodChange();
+    clearMethodErrors();
+    showSection('menu');
+  }
+
+  // ── Section navigation ─────────────────────────────────────────────────────
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(`section-${name}`).classList.add('active');
+  }
+
+  // ── Menu ───────────────────────────────────────────────────────────────────
+  async function loadMenu() {
+    try {
+      const res = await fetch(`${API}/menu`);
+      menuItems = await res.json();
+      renderMenu();
+    } catch {
+      document.getElementById('menu-list').innerHTML =
+        '<p class="empty-msg">Could not load menu. Is the server running?</p>';
+    }
+  }
+
+  function renderMenu() {
+    const list = document.getElementById('menu-list');
+    if (!menuItems.length) {
+      list.innerHTML = '<p class="empty-msg">No items available.</p>';
+      return;
+    }
+    list.innerHTML = menuItems.map(item => `
+      <div class="menu-item" id="menu-item-${item.id}">
+        <div class="menu-item-info">
+          <div class="menu-item-name">${esc(item.name)}</div>
+          <div class="menu-item-meta"><span class="tag">${esc(item.category)}</span></div>
+        </div>
+        <div class="menu-item-price">₹${item.price}</div>
+        <button class="add-btn" onclick="addToCart(${item.id})">+ Add</button>
+      </div>
+    `).join('');
+  }
+
+  function addToCart(id) {
+    cart[id] = (cart[id] || 0) + 1;
+    updateCartBadge();
+    flashAddBtn(id);
+  }
+
+  function flashAddBtn(id) {
+    const btn = document.querySelector(`#menu-item-${id} .add-btn`);
+    if (!btn) return;
+    btn.textContent = '✓ Added';
+    btn.style.background = '#d4edda';
+    btn.style.color = '#155724';
+    setTimeout(() => { btn.textContent = '+ Add'; btn.style.background = ''; btn.style.color = ''; }, 700);
+  }
+
+  function updateCartBadge() {
+    const total = Object.values(cart).reduce((s, q) => s + q, 0);
+    document.getElementById('cart-count').textContent = total;
+    const badge = document.getElementById('cart-badge');
+    const viewCartBtn = document.getElementById('view-cart-btn');
+    if (total > 0) {
+      badge.classList.remove('hidden');
+      viewCartBtn.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+      viewCartBtn.classList.add('hidden');
+    }
+    renderCart();
+  }
+
+  // ── Cart ───────────────────────────────────────────────────────────────────
+  function renderCart() {
+    const list = document.getElementById('cart-list');
+    const entries = Object.entries(cart).filter(([, q]) => q > 0);
+
+    if (!entries.length) {
+      list.innerHTML = '<p class="empty-msg">Your cart is empty.</p>';
+      document.getElementById('cart-total').textContent = '₹0';
+      document.getElementById('place-order-btn').disabled = true;
+      return;
+    }
+
+    document.getElementById('place-order-btn').disabled = false;
+    let total = 0;
+    list.innerHTML = entries.map(([id, qty]) => {
+      const item = menuItems.find(m => m.id === Number(id));
+      if (!item) return '';
+      const lineTotal = item.price * qty;
+      total += lineTotal;
+      return `
+        <div class="cart-row">
+          <div class="cart-row-name">${esc(item.name)}</div>
+          <div class="cart-row-qty">
+            <button class="qty-btn" onclick="changeQty(${id}, -1)">−</button>
+            <span class="qty-num">${qty}</span>
+            <button class="qty-btn" onclick="changeQty(${id}, 1)">+</button>
+          </div>
+          <div class="cart-row-price">₹${lineTotal}</div>
+        </div>`;
+    }).join('');
+    document.getElementById('cart-total').textContent = `₹${total}`;
+  }
+
+  function changeQty(id, delta) {
+    cart[id] = (cart[id] || 0) + delta;
+    if (cart[id] <= 0) delete cart[id];
+    updateCartBadge();
+  }
+
+  function cartTotal() {
+    return Object.entries(cart).reduce((sum, [id, qty]) => {
+      const item = menuItems.find(m => m.id === Number(id));
+      return sum + (item ? item.price * qty : 0);
+    }, 0);
+  }
+
+  // ── Order ──────────────────────────────────────────────────────────────────
+  async function placeOrder() {
+    const items = Object.entries(cart)
+      .filter(([, q]) => q > 0)
+      .map(([id, quantity]) => ({ item_id: Number(id), quantity }));
+
+    if (!items.length) {
+      const msg = document.getElementById('cart-empty-msg');
+      msg.classList.remove('hidden');
+      setTimeout(() => msg.classList.add('hidden'), 3000);
+      showSection('menu');
+      return;
+    }
+
+    const btn = document.getElementById('place-order-btn');
+    btn.disabled = true;
+    btn.textContent = 'Placing order…';
+
+    try {
+      const res = await fetch(`${API}/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
+      currentOrder = await res.json();
+      Object.keys(cart).forEach(k => delete cart[k]);
+      updateCartBadge();
+      renderPaymentSummary();
+      showSection('payment-method');
+    } catch {
+      alert('Failed to place order. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Place Order';
+    }
+  }
+
+  // ── Payment method ─────────────────────────────────────────────────────────
+  function onMethodChange() {
+    const method = document.querySelector('input[name="payment-method"]:checked').value;
+    ['upi', 'card', 'cod'].forEach(m => {
+      const card = document.getElementById(`method-card-${m}`);
+      const fields = document.getElementById(`fields-${m}`);
+      const selected = m === method;
+      card.classList.toggle('selected', selected);
+      if (fields) fields.classList.toggle('visible', selected);
+    });
+    clearMethodErrors();
+  }
+
+  function clearMethodErrors() {
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.field-group input').forEach(el => el.classList.remove('error'));
+  }
+
+  function setError(inputId, errorId) {
+    document.getElementById(inputId).classList.add('error');
+    document.getElementById(errorId).classList.add('visible');
+  }
+
+  function proceedToPay() {
+    clearMethodErrors();
+    const method = document.querySelector('input[name="payment-method"]:checked').value;
+    let valid = true;
+
+    if (method === 'upi') {
+      const upi = document.getElementById('upi-id').value.trim();
+      if (!upi || !upi.includes('@')) {
+        document.getElementById('err-upi').textContent = upi ? 'UPI ID must contain @.' : 'Please enter your UPI ID.';
+        setError('upi-id', 'err-upi');
+        valid = false;
+      }
+    } else if (method === 'card') {
+      const num = document.getElementById('card-number').value.replace(/\s/g, '');
+      const exp = document.getElementById('card-expiry').value.trim();
+      const cvv = document.getElementById('card-cvv').value.trim();
+
+      if (!/^\d{16}$/.test(num)) {
+        document.getElementById('err-card-number').textContent = num ? 'Card number must be 16 digits.' : 'Please enter your card number.';
+        setError('card-number', 'err-card-number');
+        valid = false;
+      }
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) {
+        document.getElementById('err-card-expiry').textContent = exp ? 'Use MM/YY format.' : 'Required.';
+        setError('card-expiry', 'err-card-expiry');
+        valid = false;
+      }
+      if (!/^\d{3}$/.test(cvv)) {
+        document.getElementById('err-card-cvv').textContent = cvv ? 'CVV must be 3 digits.' : 'Required.';
+        setError('card-cvv', 'err-card-cvv');
+        valid = false;
+      }
+    }
+
+    if (!valid) return;
+    selectedMethod = method;
+    showSection('payment');
+  }
+
+  function renderPaymentSummary() {
+    if (!currentOrder) return;
+    const rows = currentOrder.items.map(i =>
+      `<p><span>${esc(i.name)} × ${i.quantity}</span><span>₹${i.line_total}</span></p>`
+    ).join('');
+    document.getElementById('payment-summary').innerHTML =
+      rows + `<p><span>Total</span><span>₹${currentOrder.total}</span></p>`;
+  }
+
+  // ── Payment ────────────────────────────────────────────────────────────────
+  async function pay() {
+    const btn = document.getElementById('pay-btn');
+    const processing = document.getElementById('processing-msg');
+    const simulateFailure = document.getElementById('simulate-failure').checked;
+
+    btn.disabled = true;
+    processing.classList.add('visible');
+
+    try {
+      const res = await fetch(`${API}/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: currentOrder.order_id,
+          amount: currentOrder.total,
+          simulate_failure: simulateFailure,
+        }),
+      });
+      const result = await res.json();
+      showResult(result);
+    } catch {
+      showResult({ status: 'failed', message: 'Network error. Please try again.' });
+    } finally {
+      btn.disabled = false;
+      processing.classList.remove('visible');
+    }
+  }
+
+  // ── Result ─────────────────────────────────────────────────────────────────
+  function showResult(result) {
+    const box = document.getElementById('result-box');
+    const icon = document.getElementById('result-icon');
+    const title = document.getElementById('result-title');
+    const msg = document.getElementById('result-msg');
+    const tryAgain = document.getElementById('try-again-btn');
+    const aiDiv = document.getElementById('ai-summary');
+
+    const success = result.status === 'success';
+    const isCod = selectedMethod === 'cod';
+
+    box.className = `result-box ${success ? 'success' : 'failure'}`;
+    icon.textContent = success ? (isCod ? '🏠' : '✅') : '❌';
+
+    title.textContent = success
+      ? (isCod ? 'Order Placed!' : 'Payment Successful!')
+      : 'Payment Failed';
+    title.className = `result-title ${success ? 'success' : 'failure'}`;
+
+    msg.textContent = success && isCod
+      ? 'Our delivery partner will collect payment at your door.'
+      : (result.message || '');
+
+    const orderIdEl = document.getElementById('result-order-id');
+    if (success && currentOrder) {
+      orderIdEl.textContent = `Order reference: ${currentOrder.order_id}`;
+      orderIdEl.classList.remove('hidden');
+    } else {
+      orderIdEl.classList.add('hidden');
+    }
+
+    tryAgain.classList.toggle('hidden', success);
+
+    if (success && currentOrder) {
+      aiDiv.style.display = 'block';
+      aiDiv.textContent = 'Generating your order summary…';
+      fetch(`${API}/summary/${currentOrder.order_id}`)
+        .then(r => r.json())
+        .then(data => { aiDiv.textContent = data.summary || ''; })
+        .catch(() => { aiDiv.textContent = ''; });
+    } else {
+      aiDiv.style.display = 'none';
+      aiDiv.textContent = '';
+    }
+
+    showSection('result');
+  }
+
+  // ── Utility ────────────────────────────────────────────────────────────────
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  loadMenu();
+</script>
+</body>
+</html>
