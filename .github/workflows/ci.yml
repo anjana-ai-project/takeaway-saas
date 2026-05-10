@@ -23,11 +23,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run unit tests
-        run: pytest tests/unit -v
-
-      - name: Run integration tests
-        run: pytest tests/integration -v
+      # AI eval tests are run manually only - see tests/ai_eval/
+      # Run with: python -m pytest tests/ai_eval/ -v -s --html=reports/ai-eval-report.html
+      - name: Run unit and integration tests
+        run: python -m pytest tests/unit tests/integration -v
 
   # ── Job 2: Playwright E2E tests ─────────────────────────────────────────────
   playwright-tests:
