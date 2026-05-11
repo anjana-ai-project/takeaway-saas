@@ -112,7 +112,9 @@ Each AI-generated test case was critically reviewed and validated before inclusi
 - No load or performance testing — system behaviour under concurrent users unknown
 - Test coverage not formally measured — no coverage percentage reported in CI
 - E2E tests depend on server running — not fully self-contained in CI without webServer config
-
+- No rate limiting — API endpoints are open to abuse; production would require rate limiting per IP or API key
+- No idempotency in payments — submitting the same payment twice could result in duplicate charges; production needs idempotency keys
+- No observability — no logging, metrics, or tracing; production would need structured logging and monitoring (e.g. Datadog, CloudWatch)
 ---
 
 ## Improvements

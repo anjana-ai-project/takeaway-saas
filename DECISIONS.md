@@ -34,3 +34,8 @@
 - **Decision:** Claude API calls are mocked in all unit tests
 - **Why:** Real API calls in tests are slow, cost money, and introduce external dependencies that can cause flaky tests. Tests should be deterministic and fast.
 - **Trade-off:** Mocks may not catch real API contract changes — mitigated by integration tests.
+
+## 8. Python + FastAPI over Node.js + TypeScript + Express
+- **Decision:** Used Python + FastAPI instead of the suggested Node.js stack
+- **Why:** Python aligns with AI/ML engineering teams where this role operates. FastAPI has excellent async support, built-in request validation via Pydantic, and auto-generated API docs. pytest is mature and widely used for API testing.
+- **Trade-off:** Node.js + TypeScript is more common in traditional SaaS backends. However, the testing principles — unit, integration, E2E, CI/CD — are identical regardless of language.
