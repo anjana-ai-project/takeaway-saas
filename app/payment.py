@@ -4,6 +4,8 @@ _processed_orders: set = set()
 # Processes a payment for an order. Returns a success or failure dict.
 # Pass simulate_failure=True to test decline behaviour without a real payment gateway.
 def process_payment(order_id: str, amount: float, simulate_failure: bool = False) -> dict:
+    if not order_id or not str(order_id).strip():
+        return {"status": "failed", "message": "order_id is required"}
     if simulate_failure:
         return {"status": "failed", "message": "Payment declined. Please try again."}
     if amount <= 0:

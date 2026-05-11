@@ -25,7 +25,10 @@
       "Bash(node -e \"const fs=require\\('fs'\\); console.log\\('index.html exists:', fs.existsSync\\('reports/playwright-ui-report/index.html'\\)\\);\")",
       "Bash(node -e ' *)",
       "Bash(venv/Scripts/python -m pytest tests/unit tests/integration -v)",
-      "Bash(python -m pytest tests/unit tests/integration -v)"
+      "Bash(python -m pytest tests/unit tests/integration -v)",
+      "Bash(python -m pytest tests/unit tests/integration -v --tb=no -q)",
+      "Bash(uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(Start-Sleep -Seconds 3)"
     ]
   }
 }

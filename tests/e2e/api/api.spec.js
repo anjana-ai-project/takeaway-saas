@@ -195,8 +195,10 @@ test('POST order with invalid item_id returns 400', async ({ request }) => {
 
 // API014
 test('POST payment success returns 200 status', async ({ request }) => {
-  // ARRANGE
-  const payload = createValidPayment();
+  // ARRANGE — create a fresh order to get a unique order_id
+  const orderResp = await request.post(`${BASE}/order`, { data: { items: [{ item_id: 1, quantity: 1 }] } });
+  const order = await orderResp.json();
+  const payload = { order_id: order.order_id, amount: order.total, simulate_failure: false };
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -209,8 +211,10 @@ test('POST payment success returns 200 status', async ({ request }) => {
 
 // API015
 test('POST payment success status field equals success', async ({ request }) => {
-  // ARRANGE
-  const payload = createValidPayment();
+  // ARRANGE — create a fresh order to get a unique order_id
+  const orderResp = await request.post(`${BASE}/order`, { data: { items: [{ item_id: 1, quantity: 1 }] } });
+  const order = await orderResp.json();
+  const payload = { order_id: order.order_id, amount: order.total, simulate_failure: false };
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -224,8 +228,10 @@ test('POST payment success status field equals success', async ({ request }) => 
 
 // API016
 test('POST payment success has order_id and amount_paid', async ({ request }) => {
-  // ARRANGE
-  const payload = createValidPayment();
+  // ARRANGE — create a fresh order to get a unique order_id
+  const orderResp = await request.post(`${BASE}/order`, { data: { items: [{ item_id: 1, quantity: 1 }] } });
+  const order = await orderResp.json();
+  const payload = { order_id: order.order_id, amount: order.total, simulate_failure: false };
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });

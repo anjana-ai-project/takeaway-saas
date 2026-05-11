@@ -76,3 +76,27 @@ def test_duplicate_payment_returns_failed_status(capfd):
     assert "already processed" in second.get("message", ""), (
         f"Expected 'already processed' in duplicate payment message, got '{second.get('message')}'"
     )
+
+
+def test_payment_with_missing_order_id_returns_failed(capfd):
+    """A payment with an empty order_id must return status='failed' with a required message."""
+    result = process_payment(order_id="", amount=199)
+    print(f"\nTesting empty order_id: status='{result['status']}', message='{result.get('message')}'")
+    assert result["status"] == "failed", (
+        f"Expected status='failed' for empty order_id, got '{result['status']}'"
+    )
+    assert "required" in result.get("message", ""), (
+        f"Expected 'required' in message for empty order_id, got '{result.get('message')}'"
+    )
+
+
+def test_payment_with_none_order_id_returns_failed(capfd):
+    """A payment with order_id=None must return status='failed' with a required message."""
+    result = process_payment(order_id=None, amount=199)
+    print(f"\nTesting None order_id: status='{result['status']}', message='{result.get('message')}'")
+    assert result["status"] == "failed", (
+        f"Expected status='failed' for None order_id, got '{result['status']}'"
+    )
+    assert "required" in result.get("message", ""), (
+        f"Expected 'required' in message for None order_id, got '{result.get('message')}'"
+    )
