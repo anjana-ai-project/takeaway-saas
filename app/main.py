@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import List
 from app.menu import get_menu, get_item_by_id
 from app.order import create_order, get_order
 from app.payment import process_payment
@@ -11,6 +13,15 @@ from app.ai_summary import generate_order_summary
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
 app = FastAPI()
+
+
+class OrderItem(BaseModel):
+    item_id: int
+    quantity: int = Field(ge=1)
+
+
+class OrderBody(BaseModel):
+    items: List[OrderItem]
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,9 +53,9 @@ def retrieve_menu_item(item_id: int):
 
 
 @app.post("/order")
-def place_order(body: dict):
+def place_order(body: OrderBody):
     try:
-        order = create_order(body.get("items", []))
+        order = create_order([item.model_dump() for item in body.items])
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return order

@@ -18,6 +18,11 @@ def create_order(items: list) -> dict:
         item_id = entry.get("item_id")
         quantity = entry.get("quantity", 1)
 
+        if not isinstance(quantity, int) or isinstance(quantity, bool):
+            raise ValueError("Quantity must be a positive integer")
+        if quantity < 1:
+            raise ValueError("Quantity must be a positive integer")
+
         menu_item = get_item_by_id(item_id)
         if menu_item is None:
             raise ValueError(f"Menu item with id {item_id} not found")

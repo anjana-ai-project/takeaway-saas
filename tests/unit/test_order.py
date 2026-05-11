@@ -64,3 +64,24 @@ def test_status_is_pending_on_creation(capfd):
     assert order["status"] == "pending", (
         f"Expected status='pending' on new order, got '{order['status']}'"
     )
+
+
+def test_negative_quantity_raises_value_error(capfd):
+    """create_order() must raise ValueError when quantity is negative."""
+    print("\nTesting negative quantity raises ValueError")
+    with pytest.raises(ValueError, match="Quantity must be a positive integer"):
+        create_order([{"item_id": 1, "quantity": -1}])
+
+
+def test_zero_quantity_raises_value_error(capfd):
+    """create_order() must raise ValueError when quantity is zero."""
+    print("\nTesting zero quantity raises ValueError")
+    with pytest.raises(ValueError, match="Quantity must be a positive integer"):
+        create_order([{"item_id": 1, "quantity": 0}])
+
+
+def test_decimal_quantity_raises_value_error(capfd):
+    """create_order() must raise ValueError when quantity is a decimal (float)."""
+    print("\nTesting decimal quantity raises ValueError")
+    with pytest.raises(ValueError, match="Quantity must be a positive integer"):
+        create_order([{"item_id": 1, "quantity": 1.5}])

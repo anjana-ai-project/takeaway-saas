@@ -59,3 +59,20 @@ def test_failed_response_contains_message(capfd):
     assert result["message"], (
         f"Expected non-empty message in failed payment response, got '{result['message']}'"
     )
+
+
+def test_duplicate_payment_returns_failed_status(capfd):
+    """Submitting a payment for the same order_id twice must return status='failed'."""
+    order_id = "order-duplicate-test"
+    first = process_payment(order_id, 199)
+    second = process_payment(order_id, 199)
+    print(f"\nTesting duplicate payment: first='{first['status']}', second='{second['status']}'")
+    assert first["status"] == "success", (
+        f"Expected first payment status='success', got '{first['status']}'"
+    )
+    assert second["status"] == "failed", (
+        f"Expected duplicate payment status='failed', got '{second['status']}'"
+    )
+    assert "already processed" in second.get("message", ""), (
+        f"Expected 'already processed' in duplicate payment message, got '{second.get('message')}'"
+    )
