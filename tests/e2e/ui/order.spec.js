@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { createValidUPIPayment, createValidCardPayment } = require('../helpers/test-data');
 
 const PAGE = '/frontend/index.html';
 
@@ -28,7 +29,7 @@ async function completeUpiPayment(page, { simulateFailure = false } = {}) {
   await reachPaymentMethod(page);
   await page.locator('input[name="payment-method"][value="upi"]').check();
   await page.waitForSelector('#upi-id', { timeout: 5000 });
-  await page.locator('#upi-id').fill('test@upi');
+  await page.locator('#upi-id').fill(createValidUPIPayment().upiId);
   await page.locator('button:has-text("Proceed to Pay")').click();
   await page.waitForSelector('#pay-btn', { timeout: 5000 });
   if (simulateFailure) await page.locator('#simulate-failure').check();
@@ -40,9 +41,9 @@ async function completeCardPayment(page, { simulateFailure = false } = {}) {
   await reachPaymentMethod(page);
   await page.locator('input[name="payment-method"][value="card"]').check();
   await page.waitForSelector('#card-number', { timeout: 5000 });
-  await page.locator('#card-number').fill('1234567890123456');
-  await page.locator('#card-expiry').fill('12/26');
-  await page.locator('#card-cvv').fill('123');
+  await page.locator('#card-number').fill(createValidCardPayment().cardNumber);
+  await page.locator('#card-expiry').fill(createValidCardPayment().expiry);
+  await page.locator('#card-cvv').fill(createValidCardPayment().cvv);
   await page.locator('button:has-text("Proceed to Pay")').click();
   await page.waitForSelector('#pay-btn', { timeout: 5000 });
   if (simulateFailure) await page.locator('#simulate-failure').check();

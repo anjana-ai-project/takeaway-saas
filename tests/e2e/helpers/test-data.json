@@ -1,0 +1,23 @@
+{
+  "upi": {
+    "valid": { "upiId": "test@upi" },
+    "invalid": { "upiId": "testupi" }
+  },
+  "card": {
+    "valid": { "cardNumber": "1234567890123456", "expiry": "12/26", "cvv": "123" },
+    "invalidCardNumber": { "cardNumber": "1234" },
+    "invalidExpiry": { "expiry": "13/99" },
+    "invalidCVV": { "cvv": "12" }
+  },
+  "order": {
+    "valid": { "items": [{ "item_id": 1, "quantity": 1 }] },
+    "multiItem": { "items": [{ "item_id": 1, "quantity": 1 }, { "item_id": 2, "quantity": 1 }, { "item_id": 3, "quantity": 1 }] },
+    "invalid": { "items": [{ "item_id": 999, "quantity": 1 }] },
+    "empty": { "items": [] }
+  },
+  "payment": {
+    "valid": { "order_id": "test-001", "amount": 199, "simulate_failure": false },
+    "failure": { "order_id": "test-001", "amount": 199, "simulate_failure": true },
+    "zeroAmount": { "order_id": "test-001", "amount": 0, "simulate_failure": false }
+  }
+}

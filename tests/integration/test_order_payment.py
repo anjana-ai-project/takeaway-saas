@@ -1,6 +1,14 @@
+from tests.conftest import (
+    create_valid_order_payload,
+    create_empty_order_payload,
+    create_invalid_order_payload,
+    create_zero_amount_payment_payload,
+)
+
+
 def test_post_order_valid_items_returns_200(client):
     """POST /order with valid items must return 200 with a pending order and correct total."""
-    payload = {"items": [{"item_id": 1, "quantity": 2}]}
+    payload = create_valid_order_payload(quantity=2)
     expected_total = 199 * 2
     print(f"\nPOST /order with {payload}")
     response = client.post("/order", json=payload)
@@ -21,7 +29,7 @@ def test_post_order_valid_items_returns_200(client):
 def test_post_order_empty_items_returns_400(client):
     """POST /order with an empty items list must return 400 Bad Request."""
     print("\nPOST /order with empty items list")
-    response = client.post("/order", json={"items": []})
+    response = client.post("/order", json=create_empty_order_payload())
     print(f"Status: {response.status_code}, Body: {response.json()}")
     assert response.status_code == 400, (
         f"Expected HTTP 400 for empty items, got {response.status_code}"
@@ -30,7 +38,7 @@ def test_post_order_empty_items_returns_400(client):
 
 def test_post_order_invalid_item_id_returns_400(client):
     """POST /order with an item_id not in the menu must return 400 Bad Request."""
-    payload = {"items": [{"item_id": 9999, "quantity": 1}]}
+    payload = create_invalid_order_payload(item_id=9999)
     print(f"\nPOST /order with non-existent item_id=9999: {payload}")
     response = client.post("/order", json=payload)
     print(f"Status: {response.status_code}, Body: {response.json()}")
@@ -41,7 +49,7 @@ def test_post_order_invalid_item_id_returns_400(client):
 
 def test_full_flow_order_then_successful_payment(client):
     """Full flow: placing an order then paying must return status='success' with correct fields."""
-    order_payload = {"items": [{"item_id": 1, "quantity": 2}]}
+    order_payload = create_valid_order_payload(quantity=2)
     print(f"\nStep 1 — POST /order: {order_payload}")
     order_resp = client.post("/order", json=order_payload)
     assert order_resp.status_code == 200, (
@@ -72,7 +80,7 @@ def test_full_flow_order_then_successful_payment(client):
 
 def test_full_flow_order_then_simulated_payment_failure(client):
     """Full flow: placing an order then simulating failure must return status='failed' with a message."""
-    order_payload = {"items": [{"item_id": 2, "quantity": 1}]}
+    order_payload = create_valid_order_payload(item_id=2)
     print(f"\nStep 1 — POST /order: {order_payload}")
     order_resp = client.post("/order", json=order_payload)
     assert order_resp.status_code == 200, (
@@ -100,7 +108,7 @@ def test_full_flow_order_then_simulated_payment_failure(client):
 
 def test_payment_with_zero_amount_returns_failed_status(client):
     """POST /payment with amount=0 must return status='failed' — zero is not a valid payment."""
-    payload = {"order_id": "any-id", "amount": 0}
+    payload = create_zero_amount_payment_payload(order_id="any-id")
     print(f"\nPOST /payment with amount=0: {payload}")
     pay_resp = client.post("/payment", json=payload)
     result = pay_resp.json()

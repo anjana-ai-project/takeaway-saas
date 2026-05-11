@@ -1,4 +1,5 @@
 const { test, expect, request: playwrightRequest } = require('@playwright/test');
+const { createValidOrder, createEmptyOrder, createInvalidOrder, createValidPayment, createFailurePayment, createZeroAmountPayment } = require('../helpers/test-data');
 
 const BASE = 'http://localhost:8000';
 
@@ -108,7 +109,7 @@ test('GET menu invalid item ID returns 404', async ({ request }) => {
 // API008
 test('POST order with valid items returns 200', async ({ request }) => {
   // ARRANGE
-  const payload = { items: [{ item_id: 1, quantity: 1 }] };
+  const payload = createValidOrder();
 
   // ACT
   const response = await request.post(`${BASE}/order`, { data: payload });
@@ -122,7 +123,7 @@ test('POST order with valid items returns 200', async ({ request }) => {
 // API009
 test('POST order response contains order_id field', async ({ request }) => {
   // ARRANGE
-  const payload = { items: [{ item_id: 1, quantity: 1 }] };
+  const payload = createValidOrder();
 
   // ACT
   const response = await request.post(`${BASE}/order`, { data: payload });
@@ -137,7 +138,7 @@ test('POST order response contains order_id field', async ({ request }) => {
 // API010
 test('POST order response total is greater than zero', async ({ request }) => {
   // ARRANGE
-  const payload = { items: [{ item_id: 1, quantity: 1 }] };
+  const payload = createValidOrder();
 
   // ACT
   const response = await request.post(`${BASE}/order`, { data: payload });
@@ -152,7 +153,7 @@ test('POST order response total is greater than zero', async ({ request }) => {
 // API011
 test('POST order new order status is pending', async ({ request }) => {
   // ARRANGE
-  const payload = { items: [{ item_id: 1, quantity: 1 }] };
+  const payload = createValidOrder();
 
   // ACT
   const response = await request.post(`${BASE}/order`, { data: payload });
@@ -167,7 +168,7 @@ test('POST order new order status is pending', async ({ request }) => {
 // API012
 test('POST order with empty items returns 400', async ({ request }) => {
   // ARRANGE
-  const payload = { items: [] };
+  const payload = createEmptyOrder();
 
   // ACT
   const response = await request.post(`${BASE}/order`, { data: payload });
@@ -181,7 +182,7 @@ test('POST order with empty items returns 400', async ({ request }) => {
 // API013
 test('POST order with invalid item_id returns 400', async ({ request }) => {
   // ARRANGE
-  const payload = { items: [{ item_id: 999, quantity: 1 }] };
+  const payload = createInvalidOrder();
 
   // ACT
   const response = await request.post(`${BASE}/order`, { data: payload });
@@ -195,7 +196,7 @@ test('POST order with invalid item_id returns 400', async ({ request }) => {
 // API014
 test('POST payment success returns 200 status', async ({ request }) => {
   // ARRANGE
-  const payload = { order_id: 'test', amount: 199, simulate_failure: false };
+  const payload = createValidPayment();
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -209,7 +210,7 @@ test('POST payment success returns 200 status', async ({ request }) => {
 // API015
 test('POST payment success status field equals success', async ({ request }) => {
   // ARRANGE
-  const payload = { order_id: 'test', amount: 199, simulate_failure: false };
+  const payload = createValidPayment();
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -224,7 +225,7 @@ test('POST payment success status field equals success', async ({ request }) => 
 // API016
 test('POST payment success has order_id and amount_paid', async ({ request }) => {
   // ARRANGE
-  const payload = { order_id: 'test', amount: 199, simulate_failure: false };
+  const payload = createValidPayment();
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -242,7 +243,7 @@ test('POST payment success has order_id and amount_paid', async ({ request }) =>
 // API017
 test('POST payment simulate failure returns failed status', async ({ request }) => {
   // ARRANGE
-  const payload = { order_id: 'test', amount: 199, simulate_failure: true };
+  const payload = createFailurePayment();
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -257,7 +258,7 @@ test('POST payment simulate failure returns failed status', async ({ request }) 
 // API018
 test('POST payment simulate failure response has message', async ({ request }) => {
   // ARRANGE
-  const payload = { order_id: 'test', amount: 199, simulate_failure: true };
+  const payload = createFailurePayment();
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });
@@ -272,7 +273,7 @@ test('POST payment simulate failure response has message', async ({ request }) =
 // API019
 test('POST payment with amount zero returns failed status', async ({ request }) => {
   // ARRANGE
-  const payload = { order_id: 'test', amount: 0, simulate_failure: false };
+  const payload = createZeroAmountPayment();
 
   // ACT
   const response = await request.post(`${BASE}/payment`, { data: payload });

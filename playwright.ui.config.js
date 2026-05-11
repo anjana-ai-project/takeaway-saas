@@ -5,7 +5,7 @@ module.exports = defineConfig({
   testDir: './tests/e2e/ui',
   timeout: 30000,
   retries: 0,
-  reporter: 'html',
+  reporter: [['html', { outputFolder: 'reports/playwright-ui-report', open: 'never' }]],
   use: {
     baseURL: 'http://localhost:8000',
     headless: true,

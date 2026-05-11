@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { createInvalidUPIPayment, createValidUPIPayment, createValidCardPayment, createInvalidCardNumber, createInvalidCardExpiry, createInvalidCardCVV } = require('../helpers/test-data');
 
 const PAGE = '/frontend/index.html';
 
@@ -45,7 +46,7 @@ test('Invalid UPI ID without @ shows validation error', async ({ page }) => {
   await page.locator('input[name="payment-method"][value="upi"]').check();
 
   // ACT
-  await page.locator('#upi-id').fill('testupi');
+  await page.locator('#upi-id').fill(createInvalidUPIPayment().upiId);
   await page.locator('button:has-text("Proceed to Pay")').click();
   const actual = await page.locator('#err-upi').isVisible();
 
@@ -61,7 +62,7 @@ test('Valid UPI ID passes validation and proceeds', async ({ page }) => {
   await page.locator('input[name="payment-method"][value="upi"]').check();
 
   // ACT
-  await page.locator('#upi-id').fill('test@upi');
+  await page.locator('#upi-id').fill(createValidUPIPayment().upiId);
   await page.locator('button:has-text("Proceed to Pay")').click();
   const actual = await page.locator('#section-payment').isVisible();
 
@@ -101,9 +102,9 @@ test('Card number less than 16 digits shows error', async ({ page }) => {
   await page.waitForSelector('#card-number', { timeout: 5000 });
 
   // ACT
-  await page.locator('#card-number').fill('1234');
-  await page.locator('#card-expiry').fill('12/26');
-  await page.locator('#card-cvv').fill('123');
+  await page.locator('#card-number').fill(createInvalidCardNumber().cardNumber);
+  await page.locator('#card-expiry').fill(createValidCardPayment().expiry);
+  await page.locator('#card-cvv').fill(createValidCardPayment().cvv);
   await page.locator('button:has-text("Proceed to Pay")').click();
   const actual = await page.locator('#err-card-number').isVisible();
 
@@ -120,9 +121,9 @@ test('Invalid expiry format shows validation error', async ({ page }) => {
   await page.waitForSelector('#card-number', { timeout: 5000 });
 
   // ACT
-  await page.locator('#card-number').fill('1234567890123456');
-  await page.locator('#card-expiry').fill('13/99');
-  await page.locator('#card-cvv').fill('123');
+  await page.locator('#card-number').fill(createValidCardPayment().cardNumber);
+  await page.locator('#card-expiry').fill(createInvalidCardExpiry().expiry);
+  await page.locator('#card-cvv').fill(createValidCardPayment().cvv);
   await page.locator('button:has-text("Proceed to Pay")').click();
   const actual = await page.locator('#err-card-expiry').isVisible();
 
@@ -139,9 +140,9 @@ test('CVV less than 3 digits shows validation error', async ({ page }) => {
   await page.waitForSelector('#card-number', { timeout: 5000 });
 
   // ACT
-  await page.locator('#card-number').fill('1234567890123456');
-  await page.locator('#card-expiry').fill('12/26');
-  await page.locator('#card-cvv').fill('12');
+  await page.locator('#card-number').fill(createValidCardPayment().cardNumber);
+  await page.locator('#card-expiry').fill(createValidCardPayment().expiry);
+  await page.locator('#card-cvv').fill(createInvalidCardCVV().cvv);
   await page.locator('button:has-text("Proceed to Pay")').click();
   const actual = await page.locator('#err-card-cvv').isVisible();
 
