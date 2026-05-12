@@ -235,8 +235,24 @@ Every AI-generated test case was critically reviewed and validated before inclus
 | Visual regression | Out of scope | Playwright screenshots with visual comparison |
 
 ---
+## 9. What AI Got Wrong During the Build
 
-## 9. Future Test Additions
+The initial payment module was generated without duplicate payment 
+prevention — the same order could be paid multiple times and both 
+would succeed. This was caught during adversarial testing when identical 
+payment requests were submitted and both returned success. The generated 
+Playwright API tests also used hardcoded order IDs across multiple payment 
+tests — once duplicate prevention was added, tests started failing against 
+each other due to shared state. Both issues required deliberate 
+intervention: idempotency logic was added to the payment module, and 
+tests were updated to create fresh orders before each payment call. 
+Quantity validation was also initially only enforced at the route level — 
+further review identified that the business logic layer needed independent 
+validation so functions called directly outside the HTTP context are 
+equally protected. Each of these gaps was caught through systematic 
+adversarial testing, not during initial code review.
+
+## 10. Future Test Additions
 
 In priority order for a production system:
 
